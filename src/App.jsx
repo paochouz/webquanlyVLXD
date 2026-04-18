@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import OrderList from './pages/OrderList'
 import OrderForm from './pages/OrderForm'
@@ -8,7 +8,23 @@ import './App.css'
 export default function App() {
   const [screen, setScreen] = useState({ name: 'list' })
 
-  const navigate = (name, order = null) => setScreen({ name, order })
+  const navigate = (name, order = null) => {
+    const state = { name, order }
+    window.history.pushState(state, '')
+    setScreen(state)
+  }
+
+  useEffect(() => {
+    // set initial history entry
+    window.history.replaceState({ name: 'list', order: null }, '')
+
+    const handlePop = (e) => {
+      const state = e.state || { name: 'list', order: null }
+      setScreen(state)
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
 
   return (
     <Layout>

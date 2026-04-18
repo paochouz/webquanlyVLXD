@@ -23,7 +23,7 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
   }, [])
 
   useEffect(() => {
-    if (isEdit && order) {
+    if (isEdit && order && products.length > 0) {
       setCustomer(order.ten_kh || '')
       setPhone(order.sdt_kh || '')
       setAddress(order.dia_chi_giao || '')
@@ -32,10 +32,13 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
       supabase.from('chi_tiet_don_ban').select('*').eq('ma_don_ban', order.ma_don_ban)
         .then(({ data }) => {
           if (data && data.length > 0)
-            setRows(data.map(r => ({ ma_sp: r.ma_sp, so_luong: r.so_luong, don_gia: r.don_gia, search: r.ma_sp, showSuggest: false })))
+            setRows(data.map(r => {
+              const p = products.find(x => x.ma_sp === r.ma_sp)
+              return { ma_sp: r.ma_sp, so_luong: r.so_luong, don_gia: r.don_gia, search: p ? p.ten_sp : r.ma_sp, showSuggest: false }
+            }))
         })
     }
-  }, [isEdit, order])
+  }, [isEdit, order, products])
 
   const updateRow = (idx, fields) => {
     setRows(prev => {
@@ -70,10 +73,13 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
   const handleSave = async () => {
     if (!customer.trim()) { setErrorMsg('Vui lòng nhập tên khách hàng'); return }
     if (!phone.trim()) { setErrorMsg('Vui lòng nhập số điện thoại'); return }
-    if (/[^0-9]/.test(phone.trim())) { setErrorMsg('Số điện thoại không được chứa chữ hoặc ký tự đặc biệt'); return }
-    if (phone.trim().length !== 10) { setErrorMsg('Số điện thoại phải đúng 10 chữ số'); return }
+    if (/[^0-9]/.test(phone.trim()) || phone.trim().length !== 10 || !phone.trim().startsWith('0')) {
+      setErrorMsg('Số điện thoại phải đúng 10 chữ số, bắt đầu bằng 0 và chỉ chứa ký tự số')
+      return
+    }
     if (deliveryType === 'giao_hang' && !address.trim()) { setErrorMsg('Vui lòng nhập địa chỉ giao hàng'); return }
     if (rows.some(r => !r.ma_sp)) { setErrorMsg('Vui lòng chọn sản phẩm cho tất cả dòng'); return }
+    if (rows.some(r => !r.so_luong || Number(r.so_luong) < 1)) { setErrorMsg('Số lượng phải lớn hơn 0'); return }
     setErrorMsg('')
     setSaving(true)
 

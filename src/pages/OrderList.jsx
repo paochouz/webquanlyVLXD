@@ -20,6 +20,7 @@ function canDoAction(status, action) {
   if (action === 'Xem') return true
   if (status === 'Đã hủy') return false
   if (status === 'Hoàn tất' && ['Sửa', 'Hủy'].includes(action)) return false
+  if (status === 'Đang giao' && ['Sửa', 'Hủy'].includes(action)) return false
   return true
 }
 
@@ -29,6 +30,7 @@ export default function OrderList({ onNavigate }) {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const [openMenu, setOpenMenu] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
@@ -76,10 +78,11 @@ export default function OrderList({ onNavigate }) {
             <input
               type="text"
               placeholder="Tìm kiếm theo mã đơn, tên khách"
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { setSearch(searchInput); setPage(1) } }}
             />
-            <button className="btn-search">Tìm kiếm</button>
+            <button className="btn-search" onClick={() => { setSearch(searchInput); setPage(1) }}>Tìm kiếm</button>
           </div>
           <button className="btn-create" onClick={() => onNavigate('create')}>+ TẠO ĐƠN BÁN MỚI</button>
         </div>
@@ -108,7 +111,7 @@ export default function OrderList({ onNavigate }) {
               <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>Đang tải...</td></tr>
             ) : paged.map((order, idx) => (
               <tr key={order.ma_don_ban}>
-                <td><span className="order-id">{order.ma_don_ban}</span></td>
+                <td><span className="order-id" style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => onNavigate('view', order)}>{order.ma_don_ban}</span></td>
                 <td>{order.ten_kh}</td>
                 <td>{order.ngay_tao_don ? new Date(order.ngay_tao_don).toLocaleDateString('vi-VN') : ''}</td>
                 <td>{Number(order.tong_tien_ban || 0).toLocaleString('vi-VN')}</td>
