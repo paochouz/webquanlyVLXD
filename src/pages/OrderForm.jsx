@@ -54,16 +54,18 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
   }
 
   const getSuggestions = (search) =>
-    search.trim().length === 0 ? [] :
     products.filter(p =>
+      search.trim().length === 0 ||
       p.ten_sp.toLowerCase().includes(search.toLowerCase()) ||
       p.ma_sp.toLowerCase().includes(search.toLowerCase())
-    ).slice(0, 6)
+    ).slice(0, 8)
 
   const addRow = () => setRows(prev => [...prev, emptyRow()])
   const removeRow = (idx) => setRows(prev => prev.filter((_, i) => i !== idx))
 
   const subtotal = rows.reduce((sum, r) => sum + (Number(r.don_gia) || 0) * (Number(r.so_luong) || 0), 0)
+  const discount = Math.round(subtotal * 0.05)
+  const total = subtotal - discount
 
   const handleSave = async () => {
     if (!customer.trim()) { setErrorMsg('Vui lòng nhập tên khách hàng'); return }
@@ -84,7 +86,7 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
           dia_chi_giao: deliveryType === 'giao_hang' ? address : '',
           ghi_chu: note,
           trang_thai_don: deliveryType === 'giao_hang' ? 'Chờ giao hàng' : 'Hoàn tất',
-          tong_tien_ban: subtotal,
+          tong_tien_ban: total,
         }).eq('ma_don_ban', order.ma_don_ban)
 
         if (error) { setErrorMsg('Lỗi cập nhật: ' + error.message); return }
@@ -107,7 +109,7 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
           ma_don_ban: newId, ten_kh: customer, sdt_kh: phone,
           dia_chi_giao: deliveryType === 'giao_hang' ? address : '',
           ghi_chu: note, trang_thai_don: trangThai,
-          tong_tien_ban: subtotal, ngay_tao_don: new Date().toISOString().split('T')[0],
+          tong_tien_ban: total, ngay_tao_don: new Date().toISOString().split('T')[0],
         })
 
         if (error) { setErrorMsg('Lỗi tạo đơn: ' + error.message); return }
@@ -260,10 +262,10 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
 
           <div className="summary-section">
             <div className="summary-row"><span>Tổng tiền hàng:</span><span>{subtotal.toLocaleString('vi-VN')}đ</span></div>
-            <div className="summary-row"><span>Chiết khấu:</span><span>0đ</span></div>
+            <div className="summary-row"><span>Chiết khấu (5%):</span><span>-{discount.toLocaleString('vi-VN')}đ</span></div>
             <div className="summary-total">
               <span>{isEdit ? 'CẦN THANH TOÁN:' : 'TỔNG CỘNG:'}</span>
-              <span className="total-amount">{subtotal.toLocaleString('vi-VN')}đ</span>
+              <span className="total-amount">{total.toLocaleString('vi-VN')}đ</span>
             </div>
           </div>
 

@@ -41,6 +41,8 @@ export default function OrderView({ order, onNavigate }) {
   }, [order])
 
   const subtotal = items.reduce((s, i) => s + Number(i.don_gia) * Number(i.so_luong), 0)
+  const discount = Math.round(subtotal * 0.05)
+  const total = subtotal - discount
 
   const handleAdvanceStatus = async () => {
     const next = NEXT_STATUS[status]
@@ -110,10 +112,10 @@ export default function OrderView({ order, onNavigate }) {
             </div>
             <div className="summary-section" style={{ width: 280 }}>
               <div className="summary-row"><span>Tổng tiền hàng:</span><span>{subtotal.toLocaleString('vi-VN')}đ</span></div>
-              <div className="summary-row"><span>Chiết khấu:</span><span>0đ</span></div>
+              <div className="summary-row"><span>Chiết khấu (5%):</span><span>-{discount.toLocaleString('vi-VN')}đ</span></div>
               <div className="summary-total">
                 <span>TỔNG CỘNG:</span>
-                <span className="total-amount">{subtotal.toLocaleString('vi-VN')}đ</span>
+                <span className="total-amount">{total.toLocaleString('vi-VN')}đ</span>
               </div>
             </div>
           </div>
