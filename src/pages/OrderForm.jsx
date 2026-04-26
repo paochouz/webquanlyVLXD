@@ -78,6 +78,7 @@ export default function OrderForm({ mode = 'create', order, onNavigate }) {
       return
     }
     if (deliveryType === 'giao_hang' && !address.trim()) { setErrorMsg('Vui lòng nhập địa chỉ giao hàng'); return }
+    if (rows.length === 0) { setErrorMsg('Vui lòng thêm ít nhất một sản phẩm'); return }
     if (rows.some(r => !r.ma_sp)) { setErrorMsg('Vui lòng chọn sản phẩm cho tất cả dòng'); return }
     if (rows.some(r => !r.so_luong || Number(r.so_luong) < 1)) { setErrorMsg('Số lượng phải lớn hơn 0'); return }
     setErrorMsg('')
